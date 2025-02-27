@@ -14,6 +14,7 @@ class MusicStats:
         song_counts = {"songs_with_id": 0, "songs_with_lyrics": 0, "songs_with_genius_annotation": 0, "songs_with_qna": 0}
         languages = set()
         unique_songs = set()
+        unique_lyricists = set()
 
         for letter in "abcdefghijklmnopqrstuvwxyz":
             file_path = f"{letter}.jsonl"
@@ -42,7 +43,9 @@ class MusicStats:
                         if isinstance(data.get("lyricists"), list):
                             for lyr in data["lyricists"]:
                                 if isinstance(lyr, str):
-                                    yearly_stats[year]["lyricists"].add(lyr.strip())
+                                    lyricist = lyr.strip()
+                                    yearly_stats[year]["lyricists"].add(lyricist)
+                                    unique_lyricists.add(lyricist)
                     if data.get("song_id"):
                         song_counts["songs_with_id"] += 1
                     lyrics = data.get("lyrics")
@@ -63,6 +66,7 @@ class MusicStats:
         self._save_yearly_stats(yearly_stats)
         self._save_general_stats(song_counts, languages)
         self._save_languages(languages)
+        self._save_lyricists(unique_lyricists)
 
     def _save_genre_artists(self, genre_artists):
         with open(os.path.join(self.output_folder, "unique_genres.txt"), "w", encoding="utf-8") as f:
@@ -89,6 +93,10 @@ class MusicStats:
     def _save_languages(self, languages):
         with open(os.path.join(self.output_folder, "unique_languages.txt"), "w", encoding="utf-8") as f:
             f.writelines("\n".join(languages))
+
+    def _save_lyricists(self, unique_lyricists):
+        with open(os.path.join(self.output_folder, "unique_lyricists.txt"), "w", encoding="utf-8") as f:
+            f.write(f"Unique Lyricists: {len(unique_lyricists)}\n")
 
 stats = MusicStats()
 stats.process_files()
