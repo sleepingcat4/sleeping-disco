@@ -10,6 +10,8 @@ class MusicStats:
     def process_files(self):
         genre_artists = defaultdict(set)
         featured_artists = set()
+        primary_artists = set()
+        artist_urls = set()
         yearly_stats = defaultdict(lambda: {"albums": set(), "artists": set(), "lyricists": set()})
         song_counts = {"songs_with_id": 0, "songs_with_lyrics": 0, "songs_with_genius_annotation": 0, "songs_with_qna": 0}
         languages = set()
@@ -26,12 +28,18 @@ class MusicStats:
                     song_url = data.get("song_url")
                     if song_url:
                         unique_songs.add(song_url)
+                    artist = data.get("primary_artist")
+                    if isinstance(artist, str):
+                        artist = artist.strip()
+                        primary_artists.add(artist)
+                    artist_url = data.get("artist_url")
+                    if isinstance(artist_url, str):
+                        artist_urls.add(artist_url.strip())
                     tags = data.get("tags")
-                    artist = data.get("primary_artist", "")
                     if isinstance(tags, list) and artist:
                         for tag in tags:
                             if isinstance(tag, str):
-                                genre_artists[tag.strip()].add(artist.strip())
+                                genre_artists[tag.strip()].add(artist)
                     if isinstance(data.get("featured_artists"), list):
                         for fa in data["featured_artists"]:
                             if isinstance(fa, str):
@@ -63,6 +71,8 @@ class MusicStats:
 
         self._save_genre_artists(genre_artists)
         self._save_featured_artists(featured_artists)
+        self._save_primary_artists(primary_artists)
+        self._save_artist_urls(artist_urls)
         self._save_yearly_stats(yearly_stats)
         self._save_general_stats(song_counts, languages)
         self._save_languages(languages)
@@ -78,6 +88,14 @@ class MusicStats:
     def _save_featured_artists(self, featured_artists):
         with open(os.path.join(self.output_folder, "featured_artists_count.txt"), "w", encoding="utf-8") as f:
             f.write(f"Unique Featured Artists: {len(featured_artists)}\n")
+
+    def _save_primary_artists(self, primary_artists):
+        with open(os.path.join(self.output_folder, "unique_primary_artists.txt"), "w", encoding="utf-8") as f:
+            f.write(f"Unique Primary Artists: {len(primary_artists)}\n")
+
+    def _save_artist_urls(self, artist_urls):
+        with open(os.path.join(self.output_folder, "unique_artist_urls.txt"), "w", encoding="utf-8") as f:
+            f.write(f"Unique Artist URLs: {len(artist_urls)}\n")
 
     def _save_yearly_stats(self, yearly_stats):
         with open(os.path.join(self.output_folder, "yearly_stats.txt"), "w", encoding="utf-8") as f:
