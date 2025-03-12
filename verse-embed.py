@@ -29,7 +29,7 @@ def embed_verse():
                 lyrics = data.get("lyrics")
 
                 if song_id and lyrics:
-                    text_batch.append(lyrics)
+                    text_batch.append(lyrics.lower())  
                     ids_batch.append(song_id)
 
                     if len(text_batch) == batch_size:
